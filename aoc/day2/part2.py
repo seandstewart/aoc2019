@@ -74,6 +74,6 @@ def locate_instruction(target: int):
 
 if __name__ == '__main__':
     target = 19690720
-    instruction = locate_instruction(19690720)
+    instruction = locate_instruction(target)
     print("Day 2, Part 1:", f"Instruction for {target}: {instruction}", sep="\n")
 
