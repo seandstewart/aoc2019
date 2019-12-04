@@ -56,10 +56,9 @@ def get_steps(string: str, inter: Set[Point]) -> Dict[Point, int]:
     Return a mapping of the intersecting points and their distance from start.
     """
     steps: int = 0
-    seen: Set[Point] = set()
     dists: Dict[Point, int] = {}
     for p in stream_points(string):
-        if p in inter and p not in seen:
+        if p in inter and p not in dists:
             dists[p] = steps
         steps += 1
     return dists
