@@ -3,7 +3,8 @@
 import pytest
 
 
-from aoc.day3.part1 import get_closest_intersection, solve
+from aoc.day3.part1 import get_closest_intersection, solve as part1
+from aoc.day3.part2 import get_min_intersection, solve as part2
 
 
 @pytest.mark.parametrize(
@@ -31,6 +32,36 @@ def test_get_closest_intersection(a, b, dist):
     assert distance == dist
 
 
-def test_solve():
-    point, distance = solve()
+def test_solve_part1():
+    point, distance = part1()
     assert distance == 855
+
+
+@pytest.mark.parametrize(
+    argnames=("a", "b", "dist"),
+    argvalues=[
+        (
+                "R8,U5,L5,D3",
+                "U7,R6,D4,L4",
+                30
+        ),
+        (
+                "R75,D30,R83,U83,L12,D49,R71,U7,L72",
+                "U62,R66,U55,R34,D71,R55,D58,R83",
+                610
+        ),
+        (
+                "R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51",
+                "U98,R91,D20,R16,D67,R40,U7,R15,U6,R7",
+                410
+        )
+    ]
+)
+def test_get_min_steps_to_intersection(a, b, dist):
+    point, distance = get_min_intersection(a, b)
+    assert distance == dist
+
+
+def test_solve_part2():
+    point, distance = part2()
+    assert distance == 11238
