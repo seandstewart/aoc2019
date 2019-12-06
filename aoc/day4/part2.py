@@ -37,12 +37,8 @@ def even_grouped_repeats(password: PasswordT) -> bool:
 
 def check_password(password: PasswordT) -> bool:
     """Validate this password."""
-    if not monotonic(password):
-        return False
-    if not even_grouped_repeats(password):
-        return False
 
-    return True
+    return monotonic(password) and even_grouped_repeats(password)
 
 
 def solve():

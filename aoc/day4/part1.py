@@ -21,7 +21,7 @@ Other than the range rule, the following are true:
     223450 does not meet these criteria (decreasing pair of digits 50).
     123789 does not meet these criteria (no double).
 """
-from typing import Union, List, Iterator, Generator, Callable, Any
+from typing import Union, List, Generator, Callable, Any
 
 PASSWORD_LEN = 6
 INPUT = "387638-919123"
@@ -38,9 +38,7 @@ def monotonic(password: PasswordT) -> bool:
 
 
 def check_password(password: PasswordT) -> bool:
-    if not adjacent_repeats(password) or not monotonic(password):
-        return False
-    return True
+    return monotonic(password) and adjacent_repeats(password)
 
 
 def stream_valid_passes(
