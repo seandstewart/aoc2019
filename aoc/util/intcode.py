@@ -14,8 +14,8 @@ class OpCode(enum.IntEnum):
     OUT = 4
     JIT = 5
     JIF = 6
-    LT = 7
-    EQ = 8
+    FLT = 7
+    FEQ = 8
     STOP = 99
 
 
@@ -65,7 +65,7 @@ IO: Mapping[OpCode, OpConfig] = {
 }
 
 
-HandlerT = Callable[[Instruction, int, List[int]], Tuple[int, int]]
+HandlerT = Callable[[Instruction, int, List[int], int], Tuple[int, int]]
 
 
 @dataclasses.dataclass
@@ -78,6 +78,10 @@ class IntcodeOperator:
             OpCode.IN: self.io,
             OpCode.MUL: self.compute,
             OpCode.ADD: self.compute,
+            OpCode.FLT: self.flip,
+            OpCode.FEQ: self.flip,
+            OpCode.JIF: self.jump,
+            OpCode.JIT: self.jump,
         }
 
     @staticmethod
@@ -112,6 +116,32 @@ class IntcodeOperator:
         else:
             res = array[target]
         return res, stop + 1
+
+    @staticmethod
+    def jump(
+        instr: Instruction, pos: int, array: List[int], *, input: int = None
+    ) -> Tuple[int, int]:
+        a, b = (
+            y if x == ParamMode.IMM else array[y]
+            for x, y in zip(instr, array[pos + 1 : pos + 3])
+        )
+        if instr.code == OpCode.JIT and a:
+            pos = b
+        elif instr.code == OpCode.JIF and not a:
+            pos = b
+        return 0, pos
+
+    @staticmethod
+    def flip(instr: Instruction, pos: int, array: List[int], *, input: int = None):
+        a, b, t = (
+            y if x == ParamMode.IMM else array[y]
+            for x, y in zip(instr, array[pos + 1 : pos + 4])
+        )
+        if instr.code == OpCode.FEQ:
+            array[t] = 1 if a == b else 0
+        elif instr.code == OpCode.FLT:
+            array[t] = 1 if a < b else 0
+        return 0, pos + 4
 
     def operate(
         self, pos: int, array: List[int], *, input: int = None
