@@ -12,6 +12,10 @@ class OpCode(enum.IntEnum):
     MUL = 2
     IN = 3
     OUT = 4
+    JIT = 5
+    JIF = 6
+    LT = 7
+    EQ = 8
     STOP = 99
 
 
@@ -99,7 +103,7 @@ class IntcodeOperator:
         reg = IO[instr.code]
         stop = pos + reg["adix"]
         start = pos + 1
-        target = array[start] if instr.C == ParamMode.IMM else array[array[start]]
+        target = array[start]
         if instr.code == OpCode.IN:
             if input is None:
                 raise RuntimeError(f"{instr.code}: can't proceed without input.")
