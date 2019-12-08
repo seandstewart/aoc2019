@@ -79,15 +79,12 @@ import pathlib
 from aoc.util.intcode import IntcodeOperator
 from aoc.day5.part1 import INPUT1
 
-DIR = pathlib.Path(__file__).parent
-INPUT1: pathlib.Path = DIR / "input1.txt"
-
 
 def solve():
     array = [int(x) for x in INPUT1.read_text().split(",")]
     operator = IntcodeOperator(array)
     output = []
-    for i, out in enumerate(operator.run(input=1)):
+    for i, out in enumerate(operator.run(input=5)):
         output.append(out)
         print(f"<{i}> Out: {out}")
     print("Done.")
@@ -96,4 +93,4 @@ def solve():
 
 if __name__ == "__main__":
     final = solve()
-    print("Day 5, Part 1:", f"Final Output: {final}", sep="\n")
+    print("Day 5, Part 2:", f"Final Output: {final}", sep="\n")

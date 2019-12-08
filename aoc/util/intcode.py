@@ -3,7 +3,7 @@
 import dataclasses
 import enum
 import operator
-from typing import List, Callable, Mapping, Tuple, Iterator, Union
+from typing import List, Callable, Mapping, Tuple, Iterator, Union, Optional
 from typing_extensions import TypedDict
 
 
@@ -87,7 +87,7 @@ class IntcodeOperator:
     @staticmethod
     def compute(
         instr: Instruction, pos: int, array: List[int], *, input: int = None
-    ) -> Tuple[int, int]:
+    ) -> Tuple[Optional[int], int]:
         reg = COMPUTE[instr.code]
         op = reg["op"]
         stop = pos + reg["adix"]
@@ -98,12 +98,12 @@ class IntcodeOperator:
             *(array[p] if i == ParamMode.POS else p for p, i in zip(argspos, instr))
         )
         array[store] = val
-        return 0, stop + 1
+        return None, stop + 1
 
     @staticmethod
     def io(
         instr: Instruction, pos: int, array: List[int], *, input: int = None
-    ) -> Tuple[int, int]:
+    ) -> Tuple[Optional[int], int]:
         reg = IO[instr.code]
         stop = pos + reg["adix"]
         start = pos + 1
@@ -112,7 +112,7 @@ class IntcodeOperator:
             if input is None:
                 raise RuntimeError(f"{instr.code}: can't proceed without input.")
             array[target] = input
-            res = 0
+            res = None
         else:
             res = array[target]
         return res, stop + 1
@@ -120,7 +120,7 @@ class IntcodeOperator:
     @staticmethod
     def jump(
         instr: Instruction, pos: int, array: List[int], *, input: int = None
-    ) -> Tuple[int, int]:
+    ) -> Tuple[Optional[int], int]:
         start, stop = pos + 1, pos + 3
         a, b = (
             y if x == ParamMode.IMM else array[y]
@@ -130,7 +130,9 @@ class IntcodeOperator:
             pos = b
         elif instr.code == OpCode.JIF and not a:
             pos = b
-        return 0, pos
+        else:
+            pos = stop
+        return None, pos
 
     @staticmethod
     def flip(
@@ -160,7 +162,8 @@ class IntcodeOperator:
         try:
             while pos < len(array) and array[pos] != OpCode.STOP:
                 res, pos = self.operate(pos, array, input=input)
-                yield res
+                if res is not None:
+                    yield res
         except (ValueError, KeyError, IndexError) as err:
             print(err)
         yield array
