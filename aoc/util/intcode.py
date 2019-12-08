@@ -121,9 +121,10 @@ class IntcodeOperator:
     def jump(
         instr: Instruction, pos: int, array: List[int], *, input: int = None
     ) -> Tuple[int, int]:
+        start, stop = pos + 1, pos + 3
         a, b = (
             y if x == ParamMode.IMM else array[y]
-            for x, y in zip(instr, array[pos + 1 : pos + 3])
+            for x, y in zip(instr, array[start:stop])
         )
         if instr.code == OpCode.JIT and a:
             pos = b
@@ -132,16 +133,20 @@ class IntcodeOperator:
         return 0, pos
 
     @staticmethod
-    def flip(instr: Instruction, pos: int, array: List[int], *, input: int = None):
-        a, b, t = (
-            y if x == ParamMode.IMM else array[y]
-            for x, y in zip(instr, array[pos + 1 : pos + 4])
+    def flip(
+        instr: Instruction, pos: int, array: List[int], *, input: int = None
+    ) -> Tuple[int, int]:
+        start, stop = pos + 1, pos + 3
+        a, b = (
+            array[y] if x == ParamMode.POS else y
+            for x, y in zip(instr, array[start:stop])
         )
+        target = array[stop]
         if instr.code == OpCode.FEQ:
-            array[t] = 1 if a == b else 0
+            array[target] = int(a == b)
         elif instr.code == OpCode.FLT:
-            array[t] = 1 if a < b else 0
-        return 0, pos + 4
+            array[target] = int(a < b)
+        return 0, stop + 1
 
     def operate(
         self, pos: int, array: List[int], *, input: int = None
