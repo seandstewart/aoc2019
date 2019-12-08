@@ -3,7 +3,7 @@
 import dataclasses
 import enum
 import operator
-from typing import List, Callable, Mapping, Tuple
+from typing import List, Callable, Mapping, Tuple, Iterator, Union
 from typing_extensions import TypedDict
 
 
@@ -154,7 +154,7 @@ class IntcodeOperator:
         instruction = Instruction.from_str(str(array[pos]))
         return self.handlers[instruction.code](instruction, pos, array, input=input)
 
-    def run(self, *, input: int = None) -> List[int]:
+    def run(self, *, input: int = None) -> Iterator[Union[int, List[int]]]:
         array = self.array.copy()
         pos = 0
         try:
