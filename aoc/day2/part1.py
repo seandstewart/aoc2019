@@ -96,9 +96,9 @@ def reproduce_1202():
     array[1] = 12
     array[2] = 2
     computer = IntcodeOperator(array)
-    return computer.run()
+    return [*computer.run()][-1]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     result = reproduce_1202()
     print("Day 2, Part 1:", f"Value @ 0: {result[0]}", sep="\n")

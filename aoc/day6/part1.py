@@ -111,7 +111,7 @@ def stream_path(start: str, mapping: dict) -> Iterator[str]:
         yield step
         if step != COM:
             try:
-                to_resolve.add(mapping[next])
+                to_resolve.add(mapping[step])
             except KeyError as err:
                 print(err)
 

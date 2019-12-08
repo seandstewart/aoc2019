@@ -67,13 +67,12 @@ def locate_instruction(target: int):
             array[1] = n
             array[2] = v
             computer = IntcodeOperator(array)
-            res = computer.run()
+            res = [*computer.run()][-1]
             if res[0] == target:
                 return (100 * n) + v
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     target = 19690720
     instruction = locate_instruction(target)
     print("Day 2, Part 1:", f"Instruction for {target}: {instruction}", sep="\n")
-
