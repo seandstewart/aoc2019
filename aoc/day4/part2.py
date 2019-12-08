@@ -22,6 +22,7 @@ input meet all of the criteria?
 from collections import defaultdict
 
 from aoc.day4.part1 import INPUT, stream_valid_passes, monotonic, PasswordT
+from aoc.util.helpers import timer
 
 
 def even_grouped_repeats(password: PasswordT) -> bool:
@@ -41,15 +42,16 @@ def check_password(password: PasswordT) -> bool:
     return monotonic(password) and even_grouped_repeats(password)
 
 
+@timer
 def solve():
     start, stop = (int(x) for x in INPUT.split("-"))
     return [*stream_valid_passes(start, stop, check=check_password)]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     passwords = solve()
     print(
         "Day 4, Part 2:",
         f"Found {len(passwords)} possible combinations: {passwords}",
-        sep="\n"
+        sep="\n",
     )

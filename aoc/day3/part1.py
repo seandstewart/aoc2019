@@ -70,7 +70,7 @@ from typing import Type, TypeVar, NamedTuple, Set, Tuple, Iterator
 
 import typic
 
-from aoc.util.helpers import manhattan_distance
+from aoc.util.helpers import manhattan_distance, timer
 
 DIR = pathlib.Path(__file__).parent
 INPUT1: pathlib.Path = DIR / "input1.txt"
@@ -78,6 +78,7 @@ INPUT1: pathlib.Path = DIR / "input1.txt"
 
 class Point(NamedTuple):
     """A single point in the path. Overloads addition for easy moves."""
+
     x: int
     y: int
 
@@ -113,6 +114,7 @@ CENTER = Point(0, 0)
 @dataclasses.dataclass
 class Vector:
     """A representation of direction and distance."""
+
     PATTERN = re.compile(r"^(?P<direction>[UDLR])(?P<distance>\d+)$")
     direction: Direction
     distance: int
@@ -163,16 +165,15 @@ def get_closest_intersection(a: str, b: str) -> Tuple[Point, int]:
     return min(dists, key=_distgetter)
 
 
+@timer
 def solve():
     """Solve part 1."""
     a, b = INPUT1.read_text().splitlines()
     return get_closest_intersection(a, b)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     point, dist = solve()
     print(
-        "Day 3, Part 1:",
-        f"Closest intersection to (0, 0) @ {dist}: {point}",
-        sep="\n"
+        "Day 3, Part 1:", f"Closest intersection to (0, 0) @ {dist}: {point}", sep="\n"
     )

@@ -23,6 +23,8 @@ Other than the range rule, the following are true:
 """
 from typing import Union, List, Generator, Callable, Any
 
+from aoc.util.helpers import timer
+
 PASSWORD_LEN = 6
 INPUT = "387638-919123"
 
@@ -47,6 +49,7 @@ def stream_valid_passes(
     return (i for i in range(start, stop + 1) if check(str(i)))
 
 
+@timer
 def solve():
     start, stop = (int(x) for x in INPUT.split("-"))
     return [*stream_valid_passes(start, stop)]

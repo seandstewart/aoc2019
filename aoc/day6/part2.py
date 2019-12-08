@@ -61,6 +61,7 @@ the objects they are orbiting - not between YOU and SAN.)
 from typing import Iterator, Set
 
 from aoc.day6.part1 import INPUT1, parse_map, stream_path
+from aoc.util.helpers import timer
 
 
 def stream_intersections(a: str, b: str, mapping: dict) -> Iterator[str]:
@@ -121,6 +122,7 @@ def get_minimum_path(a: str, b: str, orbits: str) -> Set[str]:
     return steps
 
 
+@timer
 def solve():
     stops = get_minimum_path("YOU", "SAN", INPUT1.read_text())
     # The question is the number of *steps*,

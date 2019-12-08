@@ -78,6 +78,7 @@ data?
 import pathlib
 from typing import Iterator
 
+from aoc.util.helpers import timer
 from aoc.util.intcode import IntcodeOperator
 
 DIR = pathlib.Path(__file__).parent
@@ -128,6 +129,7 @@ def count_orbits(mapping: dict) -> int:
     return total
 
 
+@timer
 def solve():
     orbits = parse_map(INPUT1.read_text())
     return count_orbits(orbits)

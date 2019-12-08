@@ -107,14 +107,14 @@ class IntcodeOperator:
         reg = IO[instr.code]
         stop = pos + reg["adix"]
         start = pos + 1
-        target = array[start]
         if instr.code == OpCode.IN:
+            target = array[start]
             if input is None:
                 raise RuntimeError(f"{instr.code}: can't proceed without input.")
             array[target] = input
             res = None
         else:
-            res = array[target]
+            res = array[start] if instr.C == ParamMode.IMM else array[array[start]]
         return res, stop + 1
 
     @staticmethod

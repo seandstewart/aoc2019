@@ -76,18 +76,16 @@ What is the diagnostic code for system ID 5?
 """
 import pathlib
 
+from aoc.util.helpers import timer
 from aoc.util.intcode import IntcodeOperator
 from aoc.day5.part1 import INPUT1
 
 
+@timer
 def solve():
     array = [int(x) for x in INPUT1.read_text().split(",")]
     operator = IntcodeOperator(array)
-    output = []
-    for i, out in enumerate(operator.run(input=5)):
-        output.append(out)
-        print(f"<{i}> Out: {out}")
-    print("Done.")
+    output = [*operator.run(input=5)]
     return output[-2]
 
 

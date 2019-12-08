@@ -54,12 +54,14 @@ and verb=2, the answer would be 1202.)
 """
 import pathlib
 
+from aoc.util.helpers import timer
 from aoc.util.intcode import IntcodeOperator
 
 DIR = pathlib.Path(__file__).parent
 INPUT1: pathlib.Path = DIR / "input1.txt"
 
 
+@timer
 def locate_instruction(target: int):
     array = [int(x) for x in INPUT1.read_text().split(",")]
     for n in range(100):

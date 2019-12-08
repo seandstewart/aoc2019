@@ -48,6 +48,7 @@ intersection?
 from typing import Dict, Tuple, Set
 
 from aoc.day3.part1 import get_intersections, stream_points, Point, _distgetter, INPUT1
+from aoc.util.helpers import timer
 
 
 def get_steps(string: str, inter: Set[Point]) -> Dict[Point, int]:
@@ -77,15 +78,16 @@ def get_min_intersection(a: str, b: str) -> Tuple[Point, int]:
     return min(steps, key=_distgetter)
 
 
+@timer
 def solve():
     a, b = INPUT1.read_text().splitlines()
     return get_min_intersection(a, b)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     point, dist = solve()
     print(
         "Day 3, Part 2:",
         f"Shortest distance to intersection @ {point}: {dist}",
-        sep="\n"
+        sep="\n",
     )

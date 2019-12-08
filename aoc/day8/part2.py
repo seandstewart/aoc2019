@@ -49,9 +49,11 @@ What message is produced after decoding your image?
 """
 import dataclasses
 import enum
+import time
 from typing import Mapping, Tuple
 
 from aoc.day8.part1 import INPUT1, stream_chunks
+from aoc.util.helpers import timer
 
 
 class Pixel(enum.IntEnum):
@@ -99,9 +101,10 @@ class BitMap:
         )
 
 
+@timer
 def solve():
     return BitMap(25, 6, INPUT1.read_text().strip())
 
 
 if __name__ == "__main__":
-    print("Day 6, Part 2:", "Bitmap:", f"{solve()}", sep="\n")
+    print(f"Day 8, Part 2", "Bitmap:", f"{solve()}", sep="\n")

@@ -47,10 +47,12 @@ that layer, what is the number of 1 digits multiplied by the number of
 2 digits?
 """
 import pathlib
+import time
 from collections import Counter
 from operator import itemgetter
 from typing import Iterator, Tuple, TypeVar
 
+from aoc.util.helpers import timer
 
 DIR = pathlib.Path(__file__).parent
 INPUT1: pathlib.Path = DIR / "input1.txt"
@@ -67,6 +69,7 @@ def stream_chunks(*val: T, n: int = 25) -> Iterator[Tuple[T]]:
 _zerogetter = itemgetter("0")
 
 
+@timer
 def solve():
     min_ = min(
         (Counter(x) for x in stream_chunks(*INPUT1.read_text().strip(), n=25 * 6)),
@@ -76,4 +79,6 @@ def solve():
 
 
 if __name__ == "__main__":
-    print("Day 8, Part 1:", f"Checksum: {solve()}", sep="\n")
+    print(
+        f"Day 8, Part 1:", f"Checksum: {solve()}", sep="\n",
+    )

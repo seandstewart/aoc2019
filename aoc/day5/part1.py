@@ -106,20 +106,18 @@ tests, what diagnostic code does the program produce?
 """
 import pathlib
 
+from aoc.util.helpers import timer
 from aoc.util.intcode import IntcodeOperator
 
 DIR = pathlib.Path(__file__).parent
 INPUT1: pathlib.Path = DIR / "input1.txt"
 
 
+@timer
 def solve():
     array = [int(x) for x in INPUT1.read_text().split(",")]
     operator = IntcodeOperator(array)
-    output = []
-    for i, out in enumerate(operator.run(input=1)):
-        output.append(out)
-        print(f"<{i}> Out: {out}")
-    print("Done.")
+    output = [*operator.run(input=1)]
     return output[-2]
 
 

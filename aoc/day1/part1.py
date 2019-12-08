@@ -39,6 +39,7 @@ import pathlib
 
 import typic
 
+from aoc.util.helpers import timer
 
 DIR = pathlib.Path(__file__).parent
 INPUT1: pathlib.Path = DIR / "input1.txt"
@@ -63,9 +64,10 @@ def fuel_counter_upper(*module: Module) -> int:
     return sum(x.fuel for x in module)
 
 
+@timer
 def get_total_fuel() -> int:
     return fuel_counter_upper(*(Module(x) for x in INPUT1.read_text().splitlines()))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Day 1, Part 1:", f"Total Fuel: {get_total_fuel()}", sep="\n")

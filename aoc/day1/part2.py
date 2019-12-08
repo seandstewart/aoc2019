@@ -36,7 +36,8 @@ import pathlib
 
 import typic
 
-from .part1 import Module, fuel_counter_upper, PositiveInt, INPUT1
+from aoc.util.helpers import timer
+from aoc.day1.part1 import Module, fuel_counter_upper, PositiveInt, INPUT1
 
 
 DIR = pathlib.Path(__file__).parent
@@ -45,7 +46,6 @@ DIR = pathlib.Path(__file__).parent
 @typic.al
 @dataclasses.dataclass
 class Module(Module):
-
     @typic.cached_property
     def fuel(self) -> PositiveInt:
         remainder = total = int(self.mass / 3) - 2
@@ -56,9 +56,10 @@ class Module(Module):
         return PositiveInt(total)
 
 
+@timer
 def get_total_fuel():
     return fuel_counter_upper(*(Module(x) for x in INPUT1.read_text().splitlines()))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Day 1, Part 2:", f"Total Fuel: {get_total_fuel()}", sep="\n")
