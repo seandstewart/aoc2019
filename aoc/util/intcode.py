@@ -24,31 +24,6 @@ class ParamMode(enum.IntEnum):
     IMM = 1
 
 
-@dataclasses.dataclass
-class Instruction:
-    code: OpCode
-    C: ParamMode = ParamMode.POS
-    B: ParamMode = ParamMode.POS
-    A: ParamMode = ParamMode.POS
-
-    def __post_init__(self):
-        self.index = (self.C, self.B, self.A)
-
-    @classmethod
-    def from_str(cls, string: str) -> "Instruction":
-        """Take an instruction written right -> left and parse it."""
-        return cls(
-            OpCode(int(string[-2:])),
-            *(ParamMode(int(i)) for i in reversed(string[:-2])),
-        )
-
-    def __iter__(self):
-        return iter(self.index)
-
-    def __getitem__(self, item: int) -> ParamMode:
-        return self.index[item]
-
-
 class OpConfig(TypedDict, total=False):
     op: Callable[..., int]
     adix: int
@@ -64,15 +39,32 @@ IO: Mapping[OpCode, OpConfig] = {
     OpCode.OUT: {"adix": 1},
 }
 
+FLIP: Mapping[OpCode, OpConfig] = {
+    OpCode.FLT: {"op": operator.lt, "adix": 3},
+    OpCode.FEQ: {"op": operator.eq, "adix": 3},
+}
 
-HandlerT = Callable[[Instruction, int, List[int], int], Tuple[int, int]]
+JUMP: Mapping[OpCode, OpConfig] = {
+    OpCode.JIT: {"op": bool, "adix": 3},
+    OpCode.JIF: {"op": lambda x: not x, "adix": 3},
+}
+
+OPERATIONS = {**COMPUTE, **IO, **FLIP, **JUMP}
+
+HandlerT = Callable[[int, List[int], int], Tuple[int, int]]
 
 
 @dataclasses.dataclass
-class IntcodeOperator:
-    array: List[int]
+class Instruction:
+    code: OpCode
+    C: ParamMode = ParamMode.POS
+    B: ParamMode = ParamMode.POS
+    A: ParamMode = ParamMode.POS
 
     def __post_init__(self):
+        self.index = (self.C, self.B, self.A)
+        self.operate: Optional[Callable] = OPERATIONS[self.code].get("op")
+        self.adix = OPERATIONS[self.code].get("adix", 1)
         self.handlers: Mapping[OpCode, HandlerT] = {
             OpCode.OUT: self.io,
             OpCode.IN: self.io,
@@ -84,86 +76,91 @@ class IntcodeOperator:
             OpCode.JIT: self.jump,
         }
 
-    @staticmethod
-    def compute(
-        instr: Instruction, pos: int, array: List[int], *, input: int = None
-    ) -> Tuple[Optional[int], int]:
-        reg = COMPUTE[instr.code]
-        op = reg["op"]
-        stop = pos + reg["adix"]
-        start = pos + 1
-        store = array[stop]
-        argspos = array[start:stop]
-        val = op(
-            *(array[p] if i == ParamMode.POS else p for p, i in zip(argspos, instr))
+    @classmethod
+    def from_str(cls, string: str) -> "Instruction":
+        """Take an instruction written right -> left and parse it."""
+        return cls(
+            OpCode(int(string[-2:])),
+            *(ParamMode(int(i)) for i in reversed(string[:-2])),
         )
+
+    def __iter__(self):
+        return iter(self.index)
+
+    def __getitem__(self, item: int) -> ParamMode:
+        return self.index[item]
+
+    def get_args(self, pos: int, array: List[int]) -> Tuple[int, int, Iterator[int]]:
+        start, stop = pos + 1, pos + self.adix
+        argspos = array[start:stop]
+        args = (array[p] if i == ParamMode.POS else p for p, i in zip(argspos, self))
+        return start, stop, args
+
+    def compute(
+        self, pos: int, array: List[int], *, input: int = None
+    ) -> Tuple[Optional[int], int]:
+        start, stop, (a, b) = self.get_args(pos, array)
+        store = array[stop]
+        val = self.operate(a, b)
         array[store] = val
         return None, stop + 1
 
-    @staticmethod
     def io(
-        instr: Instruction, pos: int, array: List[int], *, input: int = None
+        self, pos: int, array: List[int], *, input: int = None
     ) -> Tuple[Optional[int], int]:
-        reg = IO[instr.code]
-        stop = pos + reg["adix"]
+        stop = pos + self.adix
         start = pos + 1
-        if instr.code == OpCode.IN:
+        if self.code == OpCode.IN:
             target = array[start]
             if input is None:
-                raise RuntimeError(f"{instr.code}: can't proceed without input.")
+                raise RuntimeError(f"{self.code}: can't proceed without input.")
             array[target] = input
             res = None
         else:
-            res = array[start] if instr.C == ParamMode.IMM else array[array[start]]
+            res = array[start] if self.C == ParamMode.IMM else array[array[start]]
         return res, stop + 1
 
-    @staticmethod
     def jump(
-        instr: Instruction, pos: int, array: List[int], *, input: int = None
+        self, pos: int, array: List[int], *, input: int = None
     ) -> Tuple[Optional[int], int]:
-        start, stop = pos + 1, pos + 3
-        a, b = (
-            y if x == ParamMode.IMM else array[y]
-            for x, y in zip(instr, array[start:stop])
-        )
-        if instr.code == OpCode.JIT and a:
-            pos = b
-        elif instr.code == OpCode.JIF and not a:
-            pos = b
-        else:
-            pos = stop
+        start, stop, (a, b) = self.get_args(pos, array)
+        pos = b if self.operate(a) else stop
         return None, pos
 
-    @staticmethod
-    def flip(
-        instr: Instruction, pos: int, array: List[int], *, input: int = None
-    ) -> Tuple[int, int]:
-        start, stop = pos + 1, pos + 3
-        a, b = (
-            array[y] if x == ParamMode.POS else y
-            for x, y in zip(instr, array[start:stop])
-        )
+    def flip(self, pos: int, array: List[int], *, input: int = None) -> Tuple[int, int]:
+        start, stop, (a, b) = self.get_args(pos, array)
         target = array[stop]
-        if instr.code == OpCode.FEQ:
-            array[target] = int(a == b)
-        elif instr.code == OpCode.FLT:
-            array[target] = int(a < b)
+        array[target] = int(self.operate(a, b))
         return 0, stop + 1
 
-    def operate(
-        self, pos: int, array: List[int], *, input: int = None
-    ) -> Tuple[int, int]:
-        instruction = Instruction.from_str(str(array[pos]))
-        return self.handlers[instruction.code](instruction, pos, array, input=input)
+    def execute(self, pos: int, array: List[int], *, input: int = None):
+        return self.handlers[self.code](pos, array, input=input)
 
-    def run(self, *, input: int = None) -> Iterator[Union[int, List[int]]]:
+
+@dataclasses.dataclass
+class IntcodeOperator:
+    array: List[int]
+
+    @staticmethod
+    def execute(pos: int, array: List[int], *, input: int = None) -> Tuple[int, int]:
+        instruction = Instruction.from_str(str(array[pos]))
+        return instruction.execute(pos, array, input=input)
+
+    def run(
+        self, *, debug: bool = False, input: int = None
+    ) -> Iterator[Union[int, List[int]]]:
+        """Run the program defined by the array of ints and output any results.
+
+        If ``debug`` is True, the final output is the state of the working memory on exit.
+        """
         array = self.array.copy()
         pos = 0
         try:
             while pos < len(array) and array[pos] != OpCode.STOP:
-                res, pos = self.operate(pos, array, input=input)
+                res, pos = self.execute(pos, array, input=input)
                 if res is not None:
                     yield res
         except (ValueError, KeyError, IndexError) as err:
             print(err)
-        yield array
+        if debug:
+            yield array

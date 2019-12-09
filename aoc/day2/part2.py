@@ -69,7 +69,7 @@ def locate_instruction(target: int):
             array[1] = n
             array[2] = v
             computer = IntcodeOperator(array)
-            res = [*computer.run()][-1]
+            res = [*computer.run(debug=True)][-1]
             if res[0] == target:
                 return (100 * n) + v
 

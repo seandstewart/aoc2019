@@ -86,7 +86,7 @@ def solve():
     array = [int(x) for x in INPUT1.read_text().split(",")]
     operator = IntcodeOperator(array)
     output = [*operator.run(input=5)]
-    return output[-2]
+    return output[-1]
 
 
 if __name__ == "__main__":

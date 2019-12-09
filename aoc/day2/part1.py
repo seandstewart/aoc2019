@@ -98,7 +98,7 @@ def reproduce_1202():
     array[1] = 12
     array[2] = 2
     computer = IntcodeOperator(array)
-    return [*computer.run()][-1]
+    return [*computer.run(debug=True)][-1]
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ from aoc.util.intcode import IntcodeOperator
     ],
 )
 def test_intcode_operator(ops, input, result):
-    assert [*IntcodeOperator(ops).run(input=input)][-1] == result
+    assert [*IntcodeOperator(ops).run(input=input, debug=True)][-1] == result
 
 
 long_prog = [
@@ -95,4 +95,4 @@ long_prog = [
 def test_jump_flip(ops, input, output):
     computer = IntcodeOperator(ops)
     out = [*computer.run(input=input)]
-    assert out[-2] == output
+    assert out[-1] == output
