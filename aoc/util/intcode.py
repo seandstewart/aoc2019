@@ -190,9 +190,10 @@ class IntcodeOperator:
         If ``debug`` is True, the final output is the state of the working memory on exit.
         """
         array = self.array.copy()
+        input = [*input]
         pos = 0
         while array[pos] != OpCode.STOP:
-            res, pos = self.execute(pos, array, input=[*input])
+            res, pos = self.execute(pos, array, input=input)
             if res is not None:
                 yield res
         if debug:

@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 import pytest
 
-from aoc.day7.part1 import stream_outs
+from aoc.day7.part1 import stream_outs, solve as part1
 from aoc.util.intcode import IntcodeOperator
 
 
@@ -24,3 +24,7 @@ from aoc.util.intcode import IntcodeOperator
 def test_stream_outs(string, expected):
     program = IntcodeOperator.from_str(string)
     assert max(stream_outs(program)) == expected
+
+
+def test_part1():
+    assert part1() == 38500
