@@ -86,6 +86,7 @@ What is the highest signal that can be sent to the thrusters?
 """
 import pathlib
 from itertools import permutations
+from typing import Iterator
 
 from aoc.util.helpers import timer
 from aoc.util.intcode import IntcodeOperator
@@ -94,9 +95,8 @@ DIR = pathlib.Path(__file__).parent
 INPUT1: pathlib.Path = DIR / "input1.txt"
 
 
-def stream_outs(program: IntcodeOperator, *, n: int = 5):
+def stream_outs(program: IntcodeOperator, *, n: int = 5) -> Iterator[int]:
     for mut in permutations(range(n)):
-        print(mut)
         out: int = 0
         for p in mut:
             res = [*program.run(out, p)]

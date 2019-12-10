@@ -3,7 +3,7 @@
 import dataclasses
 import enum
 import operator
-from collections import deque, defaultdict
+from collections import defaultdict
 from typing import (
     List,
     Callable,
@@ -12,7 +12,6 @@ from typing import (
     Iterator,
     Union,
     Optional,
-    Deque,
     DefaultDict,
     Iterable,
     TypeVar,
