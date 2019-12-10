@@ -106,6 +106,7 @@ class Instruction:
     def get_args(
         self, pos: int, array: DefaultDict[int, int]
     ) -> Tuple[int, int, Iterator[int]]:
+        """Get the args for an instruction."""
         start, stop = pos + 1, pos + self.adix
         argspos = [array[x] for x in range(start, stop)]
         args = (array[p] if i == ParamMode.POS else p for p, i in zip(argspos, self))
@@ -114,6 +115,7 @@ class Instruction:
     def compute(
         self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
     ) -> Tuple[Optional[int], int]:
+        """'compute' a new value from the parameters and store it."""
         start, stop, (a, b) = self.get_args(pos, array)
         store = array[stop]
         val = self.operate(a, b)
@@ -123,6 +125,7 @@ class Instruction:
     def io(
         self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
     ) -> Tuple[Optional[int], int]:
+        """Store an input or send a value."""
         stop = pos + self.adix
         start = pos + 1
         if self.code == OpCode.IN:
@@ -138,6 +141,7 @@ class Instruction:
     def jump(
         self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
     ) -> Tuple[Optional[int], int]:
+        """Move the pointer to a new position if a condition is met."""
         start, stop, (a, b) = self.get_args(pos, array)
         pos = b if self.operate(a) else stop
         return None, pos
@@ -145,6 +149,7 @@ class Instruction:
     def flip(
         self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
     ) -> Tuple[int, int]:
+        """Store a tiny-int of the result of a logical operation."""
         start, stop, (a, b) = self.get_args(pos, array)
         target = array[stop]
         array[target] = int(self.operate(a, b))
@@ -186,12 +191,9 @@ class IntcodeOperator:
         """
         array = self.array.copy()
         pos = 0
-        try:
-            while pos < len(array) and array[pos] != OpCode.STOP:
-                res, pos = self.execute(pos, array, input=[*input])
-                if res is not None:
-                    yield res
-        except (ValueError, KeyError, IndexError) as err:
-            print(err)
+        while array[pos] != OpCode.STOP:
+            res, pos = self.execute(pos, array, input=[*input])
+            if res is not None:
+                yield res
         if debug:
             yield array
