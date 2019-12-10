@@ -97,7 +97,7 @@ def reproduce_1202():
     array = [int(x) for x in INPUT1.read_text().split(",")]
     array[1] = 12
     array[2] = 2
-    computer = IntcodeOperator(array)
+    computer = IntcodeOperator.from_iter(array)
     return [*computer.run(debug=True)][-1]
 
 

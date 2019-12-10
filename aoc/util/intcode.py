@@ -3,7 +3,21 @@
 import dataclasses
 import enum
 import operator
-from typing import List, Callable, Mapping, Tuple, Iterator, Union, Optional
+from collections import deque, defaultdict
+from typing import (
+    List,
+    Callable,
+    Mapping,
+    Tuple,
+    Iterator,
+    Union,
+    Optional,
+    Deque,
+    DefaultDict,
+    Iterable,
+    TypeVar,
+    Type,
+)
 from typing_extensions import TypedDict
 
 
@@ -51,7 +65,7 @@ JUMP: Mapping[OpCode, OpConfig] = {
 
 OPERATIONS = {**COMPUTE, **IO, **FLIP, **JUMP}
 
-HandlerT = Callable[[int, List[int], int], Tuple[int, int]]
+HandlerT = Callable[[int, DefaultDict[int, int], int], Tuple[int, int]]
 
 
 @dataclasses.dataclass
@@ -90,14 +104,16 @@ class Instruction:
     def __getitem__(self, item: int) -> ParamMode:
         return self.index[item]
 
-    def get_args(self, pos: int, array: List[int]) -> Tuple[int, int, Iterator[int]]:
+    def get_args(
+        self, pos: int, array: DefaultDict[int, int]
+    ) -> Tuple[int, int, Iterator[int]]:
         start, stop = pos + 1, pos + self.adix
-        argspos = array[start:stop]
+        argspos = [array[x] for x in range(start, stop)]
         args = (array[p] if i == ParamMode.POS else p for p, i in zip(argspos, self))
         return start, stop, args
 
     def compute(
-        self, pos: int, array: List[int], *, input: int = None
+        self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
     ) -> Tuple[Optional[int], int]:
         start, stop, (a, b) = self.get_args(pos, array)
         store = array[stop]
@@ -106,49 +122,65 @@ class Instruction:
         return None, stop + 1
 
     def io(
-        self, pos: int, array: List[int], *, input: int = None
+        self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
     ) -> Tuple[Optional[int], int]:
         stop = pos + self.adix
         start = pos + 1
         if self.code == OpCode.IN:
             target = array[start]
-            if input is None:
+            if not input:
                 raise RuntimeError(f"{self.code}: can't proceed without input.")
-            array[target] = input
+            array[target] = input.pop()
             res = None
         else:
             res = array[start] if self.C == ParamMode.IMM else array[array[start]]
         return res, stop + 1
 
     def jump(
-        self, pos: int, array: List[int], *, input: int = None
+        self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
     ) -> Tuple[Optional[int], int]:
         start, stop, (a, b) = self.get_args(pos, array)
         pos = b if self.operate(a) else stop
         return None, pos
 
-    def flip(self, pos: int, array: List[int], *, input: int = None) -> Tuple[int, int]:
+    def flip(
+        self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
+    ) -> Tuple[int, int]:
         start, stop, (a, b) = self.get_args(pos, array)
         target = array[stop]
         array[target] = int(self.operate(a, b))
         return 0, stop + 1
 
-    def execute(self, pos: int, array: List[int], *, input: int = None):
+    def execute(
+        self, pos: int, array: DefaultDict[int, int], *, input: List[int] = None
+    ):
         return self.handlers[self.code](pos, array, input=input)
+
+
+T = TypeVar("T")
 
 
 @dataclasses.dataclass
 class IntcodeOperator:
-    array: List[int]
+    array: DefaultDict[int, int]
+
+    @classmethod
+    def from_iter(cls: Type[T], iterable: Iterable[int]) -> T:
+        array = defaultdict(int, dict([*enumerate(iterable)]))
+        return cls(array)
+
+    @classmethod
+    def from_str(cls: Type[T], string: str) -> T:
+        return cls.from_iter((int(x) for x in string.strip().split(",")))
 
     @staticmethod
-    def execute(pos: int, array: List[int], *, input: int = None) -> Tuple[int, int]:
+    def execute(
+        pos: int, array: DefaultDict[int, int], *, input: List[int] = None
+    ) -> Tuple[int, int]:
         instruction = Instruction.from_str(str(array[pos]))
         return instruction.execute(pos, array, input=input)
 
-    def run(
-        self, *, debug: bool = False, input: int = None
-    ) -> Iterator[Union[int, List[int]]]:
+    def run(self, *input: int, debug: bool = False) -> Iterator[Union[int, List[int]]]:
         """Run the program defined by the array of ints and output any results.
 
         If ``debug`` is True, the final output is the state of the working memory on exit.
@@ -157,7 +189,7 @@ class IntcodeOperator:
         pos = 0
         try:
             while pos < len(array) and array[pos] != OpCode.STOP:
-                res, pos = self.execute(pos, array, input=input)
+                res, pos = self.execute(pos, array, input=[*input])
                 if res is not None:
                     yield res
         except (ValueError, KeyError, IndexError) as err:

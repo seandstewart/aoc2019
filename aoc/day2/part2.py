@@ -63,13 +63,12 @@ INPUT1: pathlib.Path = DIR / "input1.txt"
 
 @timer
 def locate_instruction(target: int):
-    array = [int(x) for x in INPUT1.read_text().split(",")]
+    program = IntcodeOperator.from_str(INPUT1.read_text())
     for n in range(100):
         for v in range(100):
-            array[1] = n
-            array[2] = v
-            computer = IntcodeOperator(array)
-            res = [*computer.run(debug=True)][-1]
+            program.array[1] = n
+            program.array[2] = v
+            res = [*program.run(debug=True)][-1]
             if res[0] == target:
                 return (100 * n) + v
 

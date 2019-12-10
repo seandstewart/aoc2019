@@ -115,9 +115,8 @@ INPUT1: pathlib.Path = DIR / "input1.txt"
 
 @timer
 def solve():
-    array = [int(x) for x in INPUT1.read_text().split(",")]
-    operator = IntcodeOperator(array)
-    output = [*operator.run(input=1)]
+    operator = IntcodeOperator.from_str(INPUT1.read_text())
+    output = [*operator.run(1)]
     return output[-1]
 
 

@@ -85,6 +85,7 @@ Try every combination of phase settings on the amplifiers.
 What is the highest signal that can be sent to the thrusters?
 """
 import pathlib
+from itertools import permutations
 
 from aoc.util.helpers import timer
 from aoc.util.intcode import IntcodeOperator
@@ -93,11 +94,22 @@ DIR = pathlib.Path(__file__).parent
 INPUT1: pathlib.Path = DIR / "input1.txt"
 
 
+def stream_outs(program: IntcodeOperator, *, n: int = 5):
+    for mut in permutations(range(n)):
+        print(mut)
+        out: int = 0
+        for p in mut:
+            res = [*program.run(out, p)]
+            yield res[-1]
+            out = res[-1]
+
+
 @timer
 def solve():
-    pass
+    program = IntcodeOperator.from_str(INPUT1.read_text().strip())
+    return max(stream_outs(program))
 
 
 if __name__ == "__main__":
     final = solve()
-    print("Day 7, Part 1:", f"Final Output: {final}", sep="\n")
+    print("Day 7, Part 1:", f"Max Output: {final}", sep="\n")

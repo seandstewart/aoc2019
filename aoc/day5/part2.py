@@ -83,9 +83,8 @@ from aoc.day5.part1 import INPUT1
 
 @timer
 def solve():
-    array = [int(x) for x in INPUT1.read_text().split(",")]
-    operator = IntcodeOperator(array)
-    output = [*operator.run(input=5)]
+    operator = IntcodeOperator.from_str(INPUT1.read_text())
+    output = [*operator.run(5)]
     return output[-1]
 
 
